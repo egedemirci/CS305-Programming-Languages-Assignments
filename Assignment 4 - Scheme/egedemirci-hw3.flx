@@ -1,0 +1,63 @@
+%{
+#include "egedemircihw3.h" 
+#include "egedemirci-hw3.tab.h" 
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
+int line_num = 1;
+%}
+%%
+
+['][^']*[']		{
+                int i;
+                for (i=0; i <yyleng; i++){
+                    if (yytext[i]=='\n')
+                        line_num = line_num + 1;
+                }
+
+                yytext[yyleng-1]='\0';
+                yylval.stringValue = strdup(yytext+1);
+            
+                return tSTRING;
+                }
+["]Get["]		return tGET;
+["]Set["]		return tSET;
+["]Function["]	return tFUNCTION;
+["]Print["]		return tPRINT;
+["]If["]		return tIF;
+["]Return["]	return tRETURN;
+\n              {line_num = line_num + 1;}
+["]"+"["]       {yylval.lineNumber = line_num; return tADD;}
+["]"-"["]       {yylval.lineNumber = line_num; return tSUB;}
+["]"*"["]       {yylval.lineNumber = line_num; return tMUL;}
+["]"/"["]       {yylval.lineNumber = line_num; return tDIV;}
+["]"++"["]		return tINC;
+["]">"["]		return tGT;
+["]"=="["]		return tEQUALITY;
+["]"--"["]		return tDEC;
+["]"<"["]		return tLT;
+["]"<="["]		return tLEQ;
+["]">="["]		return tGEQ;
+
+
+["][_a-zA-Z][a-zA-Z0-9_]*["]	return tIDENT;
+				
+[0-9]+ |
+-[0-9]+ 	    {
+                yylval.NumericNode.realValue = atoi(yytext);
+                yylval.NumericNode.isReal = 0;
+			    return tNUM;
+                }	
+
+[0-9]+"."[0-9]+	|
+-[0-9]+"."[0-9]+	{
+    
+                    yylval.NumericNode.realValue = atof(yytext);
+                    yylval.NumericNode.isReal = 1;
+                    return tNUM;
+                }	
+	
+[ \t\r]+ 
+.			return yytext[0];
+
+%%
